@@ -7,4 +7,7 @@ admin.initializeApp({
   databaseURL:'https://edtech-8cabc-default-rtdb.asia-southeast1.firebasedatabase.app/'
 });
 
-module.exports={admin}
+const db = admin.firestore();
+// const storage = admin.storage().bucket();
+
+module.exports = { admin, db };
