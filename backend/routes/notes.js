@@ -183,4 +183,6 @@ router.get("/categories/:category/subjects/:subject/notes", async (req, res) => 
     return res.status(500).json({ error: "Failed to fetch notes", details: error.message });
   }
 });
+
+
 module.exports = router;
