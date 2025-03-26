@@ -33,10 +33,11 @@ function Signup() {
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
         <div className="text-center">
           <div className="flex justify-center">
-            <BookOpen className="h-12 w-12 text-purple-600" />
+          <img src="./logo.png" alt="logo"  className="h-12"/>
+            {/* <BookOpen className="h-12 w-12 text-purple-600" /> */}
           </div>
           <h2 className="mt-4 text-3xl font-extrabold text-gray-900">
-            Creative Dimension
+            Creating Dimensions
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Join our community of learners and access premium notes

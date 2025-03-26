@@ -1,5 +1,5 @@
 import { BookOpen, Send } from 'lucide-react';
-
+import {Link as ScrollLink} from 'react-scroll';
 export function Footer() {
   return (
     <footer className="bg-gray-900 text-white py-12">
@@ -8,7 +8,7 @@ export function Footer() {
           <div>
             <div className="flex items-center space-x-2 mb-6">
               <BookOpen className="h-6 w-6 text-blue-400" />
-              <span className="text-xl font-bold">Creating Dimension</span>
+              <span className="text-xl font-bold">Creating Dimensions</span>
             </div>
             <p className="text-gray-400">
               Empowering students with premium study materials and expert guidance.
@@ -17,10 +17,10 @@ export function Footer() {
           <div>
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
             <ul className="space-y-2">
-              <li><a href="#" className="text-gray-400 hover:text-white">Home</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white">About Us</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white">Notes</a></li>
-              <li><a href="#" className="text-gray-400 hover:text-white">Mentors</a></li>
+              <li><ScrollLink to='hero-section' duration = {500}  smooth={true} className="text-gray-400 hover:text-white cursor-pointer">Home</ScrollLink></li>
+              <li><ScrollLink to='mentor-section' duration = {500}  smooth={true} className="text-gray-400 hover:text-white cursor-pointer">Mentors</ScrollLink></li>
+              <li><ScrollLink to='contact-section' duration = {500}  smooth={true} className="text-gray-400 hover:text-white cursor-pointer">Contact</ScrollLink></li>
+              {/* <li><a href="#" className="text-gray-400 hover:text-white">Mentors</a></li> */}
             </ul>
           </div>
           <div>
