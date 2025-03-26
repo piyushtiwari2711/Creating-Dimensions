@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 // const { admin } = require("../config/firebase");
 // const { signupType } = require("../utility/types");
-const {authenticateUser} = require('../middleware/auth');
+const { authenticateUser } = require("../middleware/auth");
 // const auth = admin.auth(); // Ensure Firebase auth instance is initialized
 
 // Signup route
