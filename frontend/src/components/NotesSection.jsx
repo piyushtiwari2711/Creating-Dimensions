@@ -113,7 +113,7 @@ const NotesSection = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4 bg-gray-50">
                           {notes.map((note) => (
                             <div
-                              key={note.title}
+                              key={note.id}
                               className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                             >
                               <img
