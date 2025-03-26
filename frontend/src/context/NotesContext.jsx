@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
-const BASE_URL = process.env.VITE_BASE_URL; // Change this to your actual API URL
+const BASE_URL = import.meta.env.VITE_BASE_URL + "/notes"; // Change this to your actual API URL
 
 const NotesContext = createContext();
 
