@@ -1,8 +1,8 @@
-import { Library, GraduationCap, Users } from 'lucide-react';
+import { Library, GraduationCap, Users } from "lucide-react";
 
 export function Features() {
   return (
-    <section className="py-16 bg-gray-50">
+    <section id="feature-section" className="py-16 bg-gray-50">
       <div className="container max-w-[1400px] mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-12">
           What We Provide
@@ -14,7 +14,8 @@ export function Features() {
             </div>
             <h3 className="text-xl font-semibold mb-4">Curated Notes</h3>
             <p className="text-gray-600">
-              Access carefully selected and verified study materials from top performers.
+              Access carefully selected and verified study materials from top
+              performers.
             </p>
           </div>
           <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
@@ -23,7 +24,8 @@ export function Features() {
             </div>
             <h3 className="text-xl font-semibold mb-4">Expert Guidance</h3>
             <p className="text-gray-600">
-              Learn from experienced mentors who guide you through complex topics.
+              Learn from experienced mentors who guide you through complex
+              topics.
             </p>
           </div>
           <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">

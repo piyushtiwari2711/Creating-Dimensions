@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import { BookOpen, Menu, X } from "lucide-react";
+import { Link as ScrollLink } from "react-scroll";
 export function Navbar() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -14,12 +15,17 @@ export function Navbar() {
     <nav className="fixed w-full bg-white shadow-sm z-50">
       <div className="container max-w-[1400px] mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <ScrollLink
+            to="hero-section"
+            smooth={true}
+            duration={500}
+            className="flex items-center space-x-2 cursor-pointer"
+          >
             <BookOpen className="h-6 w-6 text-blue-600" />
             <span className="text-xl font-bold text-gray-800">
               Creating Dimensions
             </span>
-          </div>
+          </ScrollLink>
 
           {/* Mobile menu button */}
           <div className="md:hidden">
@@ -38,24 +44,30 @@ export function Navbar() {
 
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link
-              to="/"
-              className="text-gray-600 hover:text-blue-600 transition"
+            <ScrollLink
+              to="hero-section"
+              smooth={true}
+              duration={500}
+              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
             >
               Home
-            </Link>
-            <Link
-              to="/mentors"
-              className="text-gray-600 hover:text-blue-600 transition"
+            </ScrollLink>
+            <ScrollLink
+              to="mentor-section"
+              smooth={true}
+              duration={500}
+              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
             >
               Mentors
-            </Link>
-            <Link
-              to="/contact"
-              className="text-gray-600 hover:text-blue-600 transition"
+            </ScrollLink>
+            <ScrollLink
+              to="contact-section"
+              smooth={true}
+              duration={500}
+              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
             >
               Contact
-            </Link>
+            </ScrollLink>
             {user ? (
               <Link
                 to="/dashboard"
@@ -81,27 +93,33 @@ export function Navbar() {
           } md:hidden mt-4 pb-4 border-t border-gray-200`}
         >
           <div className="flex flex-col space-y-4 pt-4">
-            <Link
-              to="/"
-              className="text-gray-600 hover:text-blue-600 transition"
+            <ScrollLink
+              to="hero-section"
+              smooth={true}
+              duration={500}
+              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
               Home
-            </Link>
-            <Link
-              to="/mentors"
-              className="text-gray-600 hover:text-blue-600 transition"
+            </ScrollLink>
+            <ScrollLink
+              to="mentor-section"
+              smooth={true}
+              duration={500}
+              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
               Mentors
-            </Link>
-            <Link
-              to="/contact"
-              className="text-gray-600 hover:text-blue-600 transition"
+            </ScrollLink>
+            <ScrollLink
+              to="contact-section"
+              smooth={true}
+              duration={500}
+              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
               Contact
-            </Link>
+            </ScrollLink>
             {user ? (
               <Link
                 to="/dashboard"

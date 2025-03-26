@@ -4,7 +4,10 @@ import { useAuth } from "../context/AuthContext";
 export function Hero() {
   const { user } = useAuth();
   return (
-    <section className="pt-24 pb-12 md:pt-32 md:pb-20 bg-gradient-to-br from-blue-50 via-white to-blue-50">
+    <section
+      id="hero-section"
+      className="pt-24 pb-12 md:pt-32 md:pb-20 bg-gradient-to-br from-blue-50 via-white to-blue-50"
+    >
       <div className="container max-w-[1400px] mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-12 md:mb-0">

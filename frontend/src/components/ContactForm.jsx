@@ -10,7 +10,7 @@ export function ContactForm() {
     email: "",
     message: "",
   });
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleChange = (e) => {
@@ -20,7 +20,12 @@ export function ContactForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.message) {
+    if (
+      !formData.firstName ||
+      !formData.lastName ||
+      !formData.email ||
+      !formData.message
+    ) {
       toast.error("All fields are required");
       return;
     }
@@ -28,7 +33,10 @@ export function ContactForm() {
     setIsSubmitting(true);
 
     try {
-      const response = await axios.post("http://localhost:5000/api/contact", formData);
+      const response = await axios.post(
+        "http://localhost:5000/api/contact",
+        formData
+      );
 
       if (response.status === 200) {
         toast.success("Feedback has been sent!");
@@ -45,7 +53,7 @@ export function ContactForm() {
   };
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section id="contact-section" className="py-16 bg-gray-50">
       <div className="container max-w-[1400px] mx-auto px-4">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-6">
@@ -55,7 +63,10 @@ export function ContactForm() {
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="firstName"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   First Name
                 </label>
                 <input
@@ -69,7 +80,10 @@ export function ContactForm() {
                 />
               </div>
               <div>
-                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="lastName"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Last Name
                 </label>
                 <input
@@ -84,7 +98,10 @@ export function ContactForm() {
               </div>
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email
               </label>
               <input
@@ -98,7 +115,10 @@ export function ContactForm() {
               />
             </div>
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="message"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Message
               </label>
               <textarea
