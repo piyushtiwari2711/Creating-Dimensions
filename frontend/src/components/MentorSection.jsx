@@ -3,21 +3,23 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const mentors = [
   {
-    name: "Shantanu Bajpai",
-    role: "Co-Founder @Creating-Dimension",
-    image:
-      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&q=80&w=400",
-    description:
-      "Shantanu Bajpai completed his schooling at Lucknow Public School, pursued his graduation from the University of Delhi, and earned his post-graduation from C.C.S. University.\nWith a strong academic background and a passion for education, Shantanu specializes in strategic planning, leadership, and skill development. His expertise lies in curriculum design, student mentorship, and he is dedicated to cultivating a responsive and innovative educational ecosystem.Committed to empowering learners, he continuously works towards creating impactful educational experiences.",
-  },
-  {
     name: "Sakshi Sanskar",
     role: "Founder @CreatingDimensions",
     image:
-      "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=400",
+      "founderpic.jpg",
     description:
       "Sakshi Sanskar holds a postgraduate degree from the Delhi School of Economics, a graduate degree from the University of Delhi, and completed her schooling at Banasthali University.\nWith extensive experience in the education sector, Sakshi specializes in curriculum development, educational leadership, and student engagement.Her expertise lies in creating dynamic learning environments that encourage critical thinking and creativity.Passionate about transformative education, she is dedicated to equipping students with the skills and knowledge necessary for academic and professional success.",
   },
+
+  {
+    name: "Shantanu Bajpai",
+    role: "Co-Founder @Creating-Dimension",
+    image:
+      "./cofounderpic.jpg",
+    description:
+      "Shantanu Bajpai completed his schooling at Lucknow Public School, pursued his graduation from the University of Delhi, and earned his post-graduation from C.C.S. University.\nWith a strong academic background and a passion for education, Shantanu specializes in strategic planning, leadership, and skill development. His expertise lies in curriculum design, student mentorship, and he is dedicated to cultivating a responsive and innovative educational ecosystem.Committed to empowering learners, he continuously works towards creating impactful educational experiences.",
+  }
+  
 ];
 
 export function MentorSection() {

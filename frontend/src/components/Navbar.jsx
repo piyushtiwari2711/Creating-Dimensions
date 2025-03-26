@@ -21,7 +21,8 @@ export function Navbar() {
             duration={500}
             className="flex items-center space-x-2 cursor-pointer"
           >
-            <BookOpen className="h-6 w-6 text-blue-600" />
+            <img src="./logo.png" alt="logo"  className="h-6 "/>
+            {/* <BookOpen className="h-6 w-6 text-blue-600" /> */}
             <span className="text-xl font-bold text-gray-800">
               Creating Dimensions
             </span>
