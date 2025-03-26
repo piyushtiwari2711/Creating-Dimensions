@@ -117,7 +117,7 @@ const NotesSection = () => {
                               className="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
                             >
                               <img
-                                src={note.preview}
+                                src={note.imgUrl}
                                 alt={note.title}
                                 className="w-full h-40 object-cover"
                               />

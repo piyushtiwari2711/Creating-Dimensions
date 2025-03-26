@@ -114,6 +114,7 @@ router.delete(
       let { category, subject, noteId } = req.params;
       category = category.toLowerCase();
       subject = subject.toLowerCase();
+
       const noteRef = db
         .collection("categories")
         .doc(category)
@@ -130,10 +131,17 @@ router.delete(
 
       const noteData = noteSnapshot.data();
 
-      // Delete file from Cloudinary
-      if (noteData.cloudinaryId) {
-        await cloudinary.uploader.destroy(noteData.cloudinaryId, {
+      // Delete PDF from Cloudinary
+      if (noteData.pdfCloudinaryId) {
+        await cloudinary.uploader.destroy(noteData.pdfCloudinaryId, {
           resource_type: "raw",
+        });
+      }
+
+      // Delete Image from Cloudinary
+      if (noteData.imgCloudinaryId) {
+        await cloudinary.uploader.destroy(noteData.imgCloudinaryId, {
+          resource_type: "image",
         });
       }
 
@@ -142,12 +150,14 @@ router.delete(
 
       return res.status(200).json({ message: "Note deleted successfully" });
     } catch (error) {
+      console.error("Delete Error:", error);
       return res
         .status(500)
         .json({ error: "Failed to delete note", details: error.message });
     }
   }
 );
+
 // 🔥 GET all categories
 router.get("/categories", async (req, res) => {
   try {
