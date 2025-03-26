@@ -1,28 +1,39 @@
-import React from 'react';
-import { Menu, X, BookOpen, ShoppingCart, History, User } from 'lucide-react';
-
+import React from "react";
+import {
+  Menu,
+  X,
+  BookOpen,
+  ShoppingCart,
+  History,
+  User,
+  LogOut,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const Sidebar = ({
   isOpen,
   toggleSidebar,
   activeSection,
-  setActiveSection
+  setActiveSection,
 }) => {
+  const { logOut, user } = useAuth();
   const menuItems = [
-    { id: 'notes', label: 'Notes', icon: BookOpen },
-    { id: 'purchased', label: 'Purchased Notes', icon: ShoppingCart },
-    { id: 'history', label: 'Transaction History', icon: History },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: "notes", label: "Notes", icon: BookOpen },
+    { id: "purchased", label: "Purchased Notes", icon: ShoppingCart },
+    { id: "history", label: "Transaction History", icon: History },
+    { id: "profile", label: "Profile", icon: User },
   ];
 
   return (
     <aside
       className={`fixed inset-y-0 left-0 bg-white shadow-lg transition-all duration-300 z-50 flex flex-col
-      ${isOpen ? 'w-64' : 'w-16'}`}
+      ${isOpen ? "w-64" : "w-16"}`}
     >
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
-        <h1 className={`font-bold text-xl text-blue-600 transition-opacity duration-200 
-          ${isOpen ? 'opacity-100' : 'opacity-0 w-0'}`}>
+        <h1
+          className={`font-bold text-xl text-blue-600 transition-opacity duration-200 
+          ${isOpen ? "opacity-100" : "hidden"}`}
+        >
           Notes App
         </h1>
         <button
@@ -41,13 +52,17 @@ const Sidebar = ({
               key={item.id}
               onClick={() => setActiveSection(item.id)}
               className={`w-full flex items-center gap-4 p-3 rounded-lg mb-2 transition-all
-              ${activeSection === item.id 
-                ? 'bg-blue-100 text-blue-600' 
-                : 'hover:bg-gray-100 text-gray-700'}`}
+              ${
+                activeSection === item.id
+                  ? "bg-blue-100 text-blue-600"
+                  : "hover:bg-gray-100 text-gray-700"
+              }`}
             >
               <Icon size={20} />
-              <span className={`transition-opacity duration-200
-                ${isOpen ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}>
+              <span
+                className={`transition-opacity duration-200
+                ${isOpen ? "opacity-100" : "opacity-0 w-0 hidden"}`}
+              >
                 {item.label}
               </span>
             </button>
@@ -55,17 +70,29 @@ const Sidebar = ({
         })}
       </nav>
 
-      <div className={`p-4 border-t border-gray-100 transition-opacity duration-200
-        ${isOpen ? 'opacity-100' : 'opacity-0 hidden'}`}>
+      <div
+        className={`p-4 border-t border-gray-100 transition-opacity duration-200
+  ${isOpen ? "opacity-100" : "opacity-0 hidden"}`}
+      >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
             <User size={16} className="text-blue-600" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-gray-800">John Doe</p>
-            <p className="text-xs text-gray-500">john.doe@example.com</p>
+            <p className="text-sm font-medium text-gray-800">
+              {user.displayName}
+            </p>
+            <p className="text-xs text-gray-500">{user.email}</p>
           </div>
         </div>
+        <button
+          onClick={() => {
+            logOut();
+          }}
+          className="mt-3 w-full bg-red-200 rounded-2xl py-2 cursor-pointer text-sm font-medium text-red-600 hover:text-red-800 transition"
+        >
+          Logout
+        </button>
       </div>
     </aside>
   );

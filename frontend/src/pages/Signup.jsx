@@ -1,114 +1,32 @@
-import React, { useState } from 'react';
-import { Mail, Lock, User, BookOpen } from 'lucide-react';
-import { Link } from 'react-router';
-import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup,sendEmailVerification } from 'firebase/auth';
-import { auth, db } from '../config/firebase';
+import React, { useState } from "react";
+import { Mail, Lock, User, BookOpen } from "lucide-react";
+import { Link } from "react-router";
 import { toast } from "react-hot-toast";
-import { setDoc, doc,getDoc,serverTimestamp } from 'firebase/firestore';
+import { useAuth } from "../context/AuthContext";
 
-function Signup() { 
-  const googleProvider = new GoogleAuthProvider();
+function Signup() {
+  const { signUp, signInWithGoogle, user } = useAuth();
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
+    fullName: "",
+    email: "",
+    password: "",
   });
 
- const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  if (!formData.email || !formData.password || !formData.fullName) {
-    toast.error("All fields are required!");
-    return;
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  console.log("Form submitted:", formData);
-  
-  try {
-    const { email, password, fullName } = formData;
-
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
-    await sendEmailVerification(user);
-    toast.success("Verification email sent! Please check your inbox.");
-    const checkEmailVerification = async () => {
-      let attempts = 0;
-      const maxAttempts = 10;
-
-      while (attempts < maxAttempts) {
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-        await user.reload();
-
-        if (user.emailVerified) {
-          await updateProfile(user, { displayName: fullName });
-          await setDoc(doc(db, "Users", user.uid), {
-            uid: user.uid,
-            email: user.email,
-            displayName: fullName,
-            createdAt: serverTimestamp(),
-          });
-          toast.success("Account created successfully!");
-          console.log("User created:", user);
-          return;
-        }
-
-        attempts++;
-      }
-
-      toast.error("Email not verified. Please verify your email before proceeding.");
-    };
-
-    checkEmailVerification();
-  } catch (error) {
-    console.error("Error signing up:", error);
-
-    const errorMessages = {
-      "auth/email-already-in-use": "Email is already in use. Try logging in.",
-      "auth/weak-password": "Password should be at least 6 characters.",
-      "auth/invalid-email": "Invalid email format.",
-    };
-
-    toast.error(errorMessages[error.code] || "Failed to sign up!");
-  }
-};
-
-
-const handleGoogleSignup = async () => {
-  try {
-    const googleCredential = await signInWithPopup(auth, googleProvider);
-    const user = googleCredential.user;
-    const userRef = doc(db, "Users", user.uid);
-    const userSnap = await getDoc(userRef);    
-    if (!userSnap.exists()) {
-      await setDoc(userRef, {
-        uid: user.uid,
-        email: user.email,
-        displayName: user.displayName,
-        photoURL: user.photoURL,
-        provider: "Google",
-        createdAt: serverTimestamp(),
-      });
-    } else {
-      await setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true });
+    if (!formData.email || !formData.password || !formData.fullName) {
+      toast.error("All fields are required!");
+      return;
     }
 
-    toast.success("Signed in with Google!");
-    console.log("Google sign-in successful:", user);
-  } catch (error) {
-    console.error("Error with Google sign-in:", error);
+    console.log("Form submitted:", formData);
+    await signUp(formData.fullName, formData.email, formData.password);
+  };
 
-    let errorMessage = "Google sign-in failed!";
-    if (error.code === "auth/popup-closed-by-user") {
-      errorMessage = "Sign-in popup was closed. Try again.";
-    } else if (error.code === "auth/cancelled-popup-request") {
-      errorMessage = "Multiple popups detected. Please try again.";
-    } else if (error.code === "auth/network-request-failed") {
-      errorMessage = "Network error. Check your connection.";
-    }
-
-    toast.error(errorMessage);
-  }
-};
+  const handleGoogleSignup = async () => {
+    await signInWithGoogle();
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
@@ -143,7 +61,9 @@ const handleGoogleSignup = async () => {
                   className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
                   placeholder="Full Name"
                   value={formData.fullName}
-                  onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fullName: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -164,7 +84,9 @@ const handleGoogleSignup = async () => {
                   className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
                   placeholder="Email address"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -185,7 +107,9 @@ const handleGoogleSignup = async () => {
                   className="appearance-none rounded-lg relative block w-full pl-10 pr-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-sm"
                   placeholder="Password"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, password: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -205,7 +129,9 @@ const handleGoogleSignup = async () => {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-500">Or continue with</span>
+              <span className="px-2 bg-white text-gray-500">
+                Or continue with
+              </span>
             </div>
           </div>
 
@@ -226,8 +152,11 @@ const handleGoogleSignup = async () => {
         </form>
 
         <p className="mt-2 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link to="/signin" className="font-medium text-purple-600 hover:text-purple-500">
+          Already have an account?{" "}
+          <Link
+            to="/signin"
+            className="font-medium text-purple-600 hover:text-purple-500"
+          >
             Sign in
           </Link>
         </p>
