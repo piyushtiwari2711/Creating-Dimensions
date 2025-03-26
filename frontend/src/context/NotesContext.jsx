@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "axios";
 
+const BASE_URL = process.env.VITE_BASE_URL; // Change this to your actual API URL
+
 const NotesContext = createContext();
 
 export const NotesProvider = ({ children }) => {
@@ -10,14 +12,11 @@ export const NotesProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
+  // Fetch all categories
   const fetchCategories = async () => {
-    setLoading(true);
     try {
-      const response = await axios.get("/api/categories");
+      setLoading(true);
+      const response = await axios.get(`${BASE_URL}/categories`);
       setCategories(response.data.categories);
     } catch (err) {
       setError(err.message);
@@ -26,10 +25,13 @@ export const NotesProvider = ({ children }) => {
     }
   };
 
+  // Fetch subjects for a given category
   const fetchSubjects = async (category) => {
-    setLoading(true);
     try {
-      const response = await axios.get(`/api/categories/${category}/subjects`);
+      setLoading(true);
+      const response = await axios.get(
+        `${BASE_URL}/categories/${category}/subjects`
+      );
       setSubjects(response.data.subjects);
     } catch (err) {
       setError(err.message);
@@ -38,11 +40,12 @@ export const NotesProvider = ({ children }) => {
     }
   };
 
+  // Fetch notes for a given category and subject
   const fetchNotes = async (category, subject) => {
-    setLoading(true);
     try {
+      setLoading(true);
       const response = await axios.get(
-        `/api/categories/${category}/subjects/${subject}/notes`
+        `${BASE_URL}/categories/${category}/subjects/${subject}/notes`
       );
       setNotes(response.data.notes);
     } catch (err) {
@@ -52,29 +55,30 @@ export const NotesProvider = ({ children }) => {
     }
   };
 
+  // Upload a new note
   const uploadNote = async (formData) => {
-    setLoading(true);
     try {
-      const response = await axios.post("/api/upload", formData, {
+      setLoading(true);
+      const response = await axios.post(`${BASE_URL}/upload`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      fetchNotes(formData.get("category"), formData.get("subject")); // Refresh notes
       return response.data;
     } catch (err) {
       setError(err.message);
-      throw err;
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
+  // Delete a note
   const deleteNote = async (category, subject, noteId) => {
-    setLoading(true);
     try {
+      setLoading(true);
       await axios.delete(
-        `/api/categories/${category}/subjects/${subject}/notes/${noteId}`
+        `${BASE_URL}/categories/${category}/subjects/${subject}/notes/${noteId}`
       );
-      fetchNotes(category, subject); // Refresh notes
+      setNotes((prevNotes) => prevNotes.filter((note) => note.id !== noteId));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -88,13 +92,13 @@ export const NotesProvider = ({ children }) => {
         categories,
         subjects,
         notes,
-        loading,
-        error,
         fetchCategories,
         fetchSubjects,
         fetchNotes,
         uploadNote,
         deleteNote,
+        loading,
+        error,
       }}
     >
       {children}
