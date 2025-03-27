@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Store user in Firestore
-      await setDoc(doc(db, "Users", user.uid), {
+      await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
         displayName,
@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const credentials = await signInWithPopup(auth, provider);
       const user = credentials.user;
-      const userRef = doc(db, "Users", user.uid);
+      const userRef = doc(db, "users", user.uid);
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {

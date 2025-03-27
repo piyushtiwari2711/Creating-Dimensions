@@ -3,7 +3,7 @@ const router = express.Router();
 const authRouter = require("./auth");
 const userRouter = require("./user");
 const notesRouter = require("./notes");
-// const paymentRouter = require('./payment')
+const paymentRouter = require('./payment')
 //auth
 //user
 //notes
@@ -14,5 +14,5 @@ router.get("/", (req, res) => {
 router.use("/auth", authRouter);
 router.use("/user", userRouter);
 router.use("/notes", notesRouter);
-// router.use('/payment',paymentRouter)
+router.use('/payment',paymentRouter)
 module.exports = router;
