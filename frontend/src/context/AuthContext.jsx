@@ -29,6 +29,8 @@ export const AuthProvider = ({ children }) => {
       if (currentUser) {
         await currentUser.reload();
         setUser(auth.currentUser);
+        localStorage.setItem('token',auth.currentUser.accessToken);
+        console.log(auth.currentUser)
       } else {
         setUser(null);
       }

@@ -34,7 +34,11 @@ export const initiatePayment = async (note, user) => {
       currency: "INR",
       noteId: note.id, // Ensure this matches backend
       userId: user.uid, // Ensure this is correct
-    });
+    },{
+        headers:{
+          Authorization:`Bearer ${localStorage.getItem('token')}`
+        }
+      });
 
     console.log("Order Created:", data);
 
@@ -54,7 +58,11 @@ export const initiatePayment = async (note, user) => {
             razorpay_signature: response.razorpay_signature,
             noteId: note.id, // Ensure this matches backend
             userId: user.uid, // Ensure this matches backend
-          });
+          },{
+        headers:{
+          Authorization:`Bearer ${localStorage.getItem('token')}`
+        }
+      });
 
           if (verifyRes.data.success) {
             toast.success("Payment successful! Note added to your library.");
