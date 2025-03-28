@@ -7,7 +7,8 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-6">
-              <BookOpen className="h-6 w-6 text-blue-400" />
+              {/* <BookOpen className="h-6 w-6 text-blue-400" /> */}
+              <img src="./logo2.png" alt="logo"  className="h-6"/>
               <span className="text-xl font-bold">Creating Dimensions</span>
             </div>
             <p className="text-gray-400">
@@ -50,7 +51,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-          <p>© 2025 Creating Dimension. All rights reserved.</p>
+          <p>© 2025 Creating Dimensions. All rights reserved.</p>
         </div>
       </div>
     </footer>
