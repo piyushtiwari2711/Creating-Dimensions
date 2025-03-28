@@ -80,8 +80,8 @@ const Sidebar = ({
           <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
             {/* <User size={16} className="text-blue-600" /> */}
             <img
-              src={user.photoURL || "/user.png"}
-              alt={user.displayName || "User"}
+              src={user?.photoURL || "/user.png"}
+              alt={user?.displayName || "User"}
               className="rounded-full object-cover"
             />
           </div>

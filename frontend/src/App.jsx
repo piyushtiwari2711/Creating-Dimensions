@@ -4,6 +4,7 @@ import Home from "./pages/Home";
 import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import AdminComponent from "./pages/Admin";
 import ProtectedRoutes from "./components/ProtectedRoutes";
 
 const App = () => {
@@ -13,6 +14,7 @@ const App = () => {
       <Route path="/signin" element={<Signin />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/dashboard" element={<Dashboard />} />
+      <Route path="/admin" element={<AdminComponent />} />
     </Routes>
   );
 };
