@@ -9,6 +9,7 @@ export const NotesProvider = ({ children }) => {
   const [categories, setCategories] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [notes, setNotes] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -16,10 +17,10 @@ export const NotesProvider = ({ children }) => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${BASE_URL}/notes/categories`,{
-        headers:{
-          Authorization:`Bearer ${localStorage.getItem('token')}`
-        }
+      const response = await axios.get(`${BASE_URL}/notes/categories`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
       });
       setCategories(response.data.categories);
     } catch (err) {
@@ -34,11 +35,12 @@ export const NotesProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASE_URL}/categories/${category}/notes/subjects`,{
-        headers:{
-          Authorization:`Bearer ${localStorage.getItem('token')}`
+        `${BASE_URL}/notes/categories/${category}/subjects`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      }
       );
       setSubjects(response.data.subjects);
     } catch (err) {
@@ -53,11 +55,12 @@ export const NotesProvider = ({ children }) => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `${BASE_URL}/categories/${category}/notes/subjects/${subject}/notes`,{
-        headers:{
-          Authorization:`Bearer ${localStorage.getItem('token')}`
+        `${BASE_URL}/notes/categories/${category}/subjects/${subject}/notes`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
-      }
       );
       setNotes(response.data.notes);
     } catch (err) {
@@ -83,22 +86,37 @@ export const NotesProvider = ({ children }) => {
     }
   };
   const purchasedNotes = async () => {
-  try {
-    setLoading(true);
-    const response = await axios.get(`${BASE_URL}/user/notes`, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-    setNotes(response.data.notes)
-  } catch (err) {
-    setNotes([])
-    setError(err.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+    try {
+      setLoading(true);
+      const response = await axios.get(`${BASE_URL}/user/notes`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      setNotes(response.data.notes);
+    } catch (err) {
+      setNotes([]);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const transactionHistory = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`${BASE_URL}/user/transactions`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      setTransactions(response.data.transactions);
+    } catch (err) {
+      setTransactions([]);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Delete a note
   const deleteNote = async (category, subject, noteId) => {
@@ -127,6 +145,8 @@ export const NotesProvider = ({ children }) => {
         uploadNote,
         deleteNote,
         purchasedNotes,
+        transactionHistory,
+        transactions,
         loading,
         error,
       }}

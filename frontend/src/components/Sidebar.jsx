@@ -9,6 +9,7 @@ import {
   LogOut,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router";
 
 const Sidebar = ({
   isOpen,
@@ -30,12 +31,13 @@ const Sidebar = ({
       ${isOpen ? "w-64" : "w-16"}`}
     >
       <div className="flex items-center justify-between h-16 px-4 border-b border-gray-100">
-        <h1
-          className={`font-bold text-xl text-blue-600 transition-opacity duration-200 
+        <Link
+          to={"/"}
+          className={`font-bold text-xl cursor-pointer text-blue-600 transition-opacity duration-200 
           ${isOpen ? "opacity-100" : "hidden"}`}
         >
           Notes App
-        </h1>
+        </Link>
         <button
           onClick={toggleSidebar}
           className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -76,7 +78,12 @@ const Sidebar = ({
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-            <User size={16} className="text-blue-600" />
+            {/* <User size={16} className="text-blue-600" /> */}
+            <img
+              src={user.photoURL || "/user.png"}
+              alt={user.displayName || "User"}
+              className="rounded-full object-cover"
+            />
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-800">

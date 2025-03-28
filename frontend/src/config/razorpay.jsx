@@ -29,16 +29,20 @@ export const initiatePayment = async (note, user) => {
 
   try {
     // 🔹 Step 1: Create order via backend
-    const { data } = await axios.post(`${BASE_URL}/create-order`, {
-      amount: note.price, // Amount is already in rupees
-      currency: "INR",
-      noteId: note.id, // Ensure this matches backend
-      userId: user.uid, // Ensure this is correct
-    },{
-        headers:{
-          Authorization:`Bearer ${localStorage.getItem('token')}`
-        }
-      });
+    const { data } = await axios.post(
+      `${BASE_URL}/create-order`,
+      {
+        amount: note.price, // Amount is already in rupees
+        currency: "INR",
+        noteId: note.id, // Ensure this matches backend
+        userId: user.uid, // Ensure this is correct
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      }
+    );
 
     console.log("Order Created:", data);
 
@@ -52,17 +56,21 @@ export const initiatePayment = async (note, user) => {
       handler: async (response) => {
         // 🔹 Step 2: Verify payment
         try {
-          const verifyRes = await axios.post(`${BASE_URL}/verify-payment`, {
-            razorpay_payment_id: response.razorpay_payment_id,
-            razorpay_order_id: response.razorpay_order_id,
-            razorpay_signature: response.razorpay_signature,
-            noteId: note.id, // Ensure this matches backend
-            userId: user.uid, // Ensure this matches backend
-          },{
-        headers:{
-          Authorization:`Bearer ${localStorage.getItem('token')}`
-        }
-      });
+          const verifyRes = await axios.post(
+            `${BASE_URL}/verify-payment`,
+            {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+              noteId: note.id, // Ensure this matches backend
+              userId: user.uid, // Ensure this matches backend
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
 
           if (verifyRes.data.success) {
             toast.success("Payment successful! Note added to your library.");
@@ -77,7 +85,6 @@ export const initiatePayment = async (note, user) => {
       prefill: {
         name: user.displayName,
         email: user.email,
-        contact: user.phone || "9876543210",
       },
       theme: {
         color: "#3399cc",

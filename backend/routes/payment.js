@@ -57,21 +57,37 @@ router.post("/create-order", async (req, res) => {
 // 🔹 Verify Payment & Grant Access (with Firestore Transaction)
 router.post("/verify-payment", async (req, res) => {
   try {
-    const { razorpay_payment_id, razorpay_order_id, razorpay_signature, noteId, userId } = req.body;
+    const {
+      razorpay_payment_id,
+      razorpay_order_id,
+      razorpay_signature,
+      noteId,
+      userId,
+    } = req.body;
 
-    if (!razorpay_payment_id || !razorpay_order_id || !razorpay_signature || !noteId || !userId) {
-      return res.status(400).json({ success: false, message: "Missing required fields" });
+    if (
+      !razorpay_payment_id ||
+      !razorpay_order_id ||
+      !razorpay_signature ||
+      !noteId ||
+      !userId
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" });
     }
 
     // Step 1: Verify Razorpay Signature
-    const secret = process.env.RAZORPAY_SECRET;
+    const secret = process.env.Razorpay_Secret;
     const expectedSignature = crypto
       .createHmac("sha256", secret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
     if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ success: false, message: "Invalid signature" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid signature" });
     }
 
     // Step 2: Update Firestore using a Transaction
@@ -102,7 +118,9 @@ router.post("/verify-payment", async (req, res) => {
       });
     });
 
-    res.status(200).json({ success: true, message: "Payment verified and note added!" });
+    res
+      .status(200)
+      .json({ success: true, message: "Payment verified and note added!" });
   } catch (error) {
     console.error("Payment verification error:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
@@ -110,68 +128,74 @@ router.post("/verify-payment", async (req, res) => {
 });
 
 // 🔹 Razorpay Webhook for Automatic Payment Updates
-router.post("/webhook", express.json({ type: "application/json" }), async (req, res) => {
-  try {
-    const secret = process.env.WEBHOOK_SECRET;
+router.post(
+  "/webhook",
+  express.json({ type: "application/json" }),
+  async (req, res) => {
+    try {
+      const secret = process.env.WEBHOOK_SECRET;
 
-    const shasum = crypto.createHmac("sha256", secret);
-    shasum.update(JSON.stringify(req.body));
-    const digest = shasum.digest("hex");
+      const shasum = crypto.createHmac("sha256", secret);
+      shasum.update(JSON.stringify(req.body));
+      const digest = shasum.digest("hex");
 
-    if (digest !== req.headers["x-razorpay-signature"]) {
-      return res.status(400).json({ error: "Invalid signature" });
-    }
+      if (digest !== req.headers["x-razorpay-signature"]) {
+        return res.status(400).json({ error: "Invalid signature" });
+      }
 
-    const event = req.body.event;
+      const event = req.body.event;
 
-    if (event === "payment.captured") {
-      const payment = req.body.payload.payment.entity;
+      if (event === "payment.captured") {
+        const payment = req.body.payload.payment.entity;
 
-      await db.runTransaction(async (transaction) => {
+        await db.runTransaction(async (transaction) => {
+          const orderRef = db.collection("orders").doc(payment.order_id);
+          const orderSnap = await transaction.get(orderRef);
+
+          if (!orderSnap.exists) {
+            throw new Error("Order not found");
+          }
+
+          const orderData = orderSnap.data();
+          const userRef = db.collection("users").doc(orderData.userId);
+
+          // Ensure user document exists before updating
+          const userSnap = await transaction.get(userRef);
+          if (!userSnap.exists) {
+            transaction.set(userRef, { purchasedNotes: [] });
+          }
+
+          // Update order and user atomically
+          transaction.update(orderRef, {
+            status: "paid",
+            paymentId: payment.id,
+          });
+
+          transaction.update(userRef, {
+            purchasedNotes: admin.firestore.FieldValue.arrayUnion(
+              orderData.noteId
+            ),
+          });
+        });
+
+        console.log("Payment captured via webhook:", req.body);
+      } else if (event === "payment.failed") {
+        const payment = req.body.payload.payment.entity;
         const orderRef = db.collection("orders").doc(payment.order_id);
-        const orderSnap = await transaction.get(orderRef);
 
-        if (!orderSnap.exists) {
-          throw new Error("Order not found");
-        }
-
-        const orderData = orderSnap.data();
-        const userRef = db.collection("users").doc(orderData.userId);
-
-        // Ensure user document exists before updating
-        const userSnap = await transaction.get(userRef);
-        if (!userSnap.exists) {
-          transaction.set(userRef, { purchasedNotes: [] });
-        }
-
-        // Update order and user atomically
-        transaction.update(orderRef, {
-          status: "paid",
-          paymentId: payment.id,
+        await orderRef.update({
+          status: "failed",
         });
 
-        transaction.update(userRef, {
-          purchasedNotes: admin.firestore.FieldValue.arrayUnion(orderData.noteId),
-        });
-      });
+        console.error("Payment failed:", payment);
+      }
 
-      console.log("Payment captured via webhook:", req.body);
-    } else if (event === "payment.failed") {
-      const payment = req.body.payload.payment.entity;
-      const orderRef = db.collection("orders").doc(payment.order_id);
-
-      await orderRef.update({
-        status: "failed",
-      });
-
-      console.error("Payment failed:", payment);
+      res.json({ status: "ok" });
+    } catch (error) {
+      console.error("Webhook error:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
-
-    res.json({ status: "ok" });
-  } catch (error) {
-    console.error("Webhook error:", error);
-    res.status(500).json({ error: "Internal server error" });
   }
-});
+);
 
 module.exports = router;

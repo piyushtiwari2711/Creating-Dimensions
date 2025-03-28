@@ -8,7 +8,6 @@ import { toast } from "react-hot-toast";
 
 const Profile = () => {
   const { user } = useAuth();
-
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     displayName: user.displayName || "",
@@ -72,7 +71,7 @@ const Profile = () => {
             <img
               src={user.photoURL || "/user.png"}
               alt={user.displayName || "User"}
-              className="w-32 h-32 rounded-full object-cover mb-4"
+              className="w-32 h-32 rounded-full object-fit mb-4"
             />
             {isEditing ? (
               <input
