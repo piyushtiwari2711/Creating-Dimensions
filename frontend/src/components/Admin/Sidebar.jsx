@@ -6,124 +6,128 @@ import {
   Menu,
   ChevronLeft,
   DollarSign,
+  LayoutDashboard,
 } from "lucide-react";
 
 const Sidebar = ({ isOpen, toggleSidebar, onNavigate, activeView }) => {
+  const navItems = [
+    { id: "upload", icon: Upload, label: "Upload Notes" },
+    { id: "manage", icon: FileText, label: "Manage Notes" },
+    { id: "transactions", icon: DollarSign, label: "Transactions" },
+  ];
+
   return (
     <>
       <button
         onClick={toggleSidebar}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-md"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 bg-white rounded-xl shadow-lg hover:bg-gray-50 transition-colors duration-200"
+        aria-label="Toggle Sidebar"
       >
-        <Menu size={24} />
+        <Menu size={22} className="text-gray-700" />
       </button>
 
-      <div
+      <aside
         className={`
-        fixed top-0 left-0 h-full bg-gray-800 text-white transition-all duration-300 ease-in-out z-40
-        ${isOpen ? "w-64" : "w-20"} 
-        ${
-          window.innerWidth < 1024 && !isOpen
-            ? "-translate-x-full"
-            : "translate-x-0"
-        }
-      `}
+          fixed top-0 left-0 h-full bg-gradient-to-b from-gray-800 to-gray-900 text-white transition-all duration-300 ease-in-out z-40
+          shadow-2xl backdrop-blur-sm
+          ${isOpen ? "w-64" : "w-20"} 
+          ${
+            window.innerWidth < 1024 && !isOpen
+              ? "-translate-x-full"
+              : "translate-x-0"
+          }
+        `}
       >
-        <div className="p-5 relative">
+        <div className="p-5 h-full flex flex-col relative">
           <button
             onClick={toggleSidebar}
-            className="hidden lg:block absolute -right-3 top-5 bg-gray-800 rounded-full p-1 transform translate-x-full"
+            className="hidden lg:flex absolute -right-3 top-8 bg-gray-800 rounded-full p-1.5 transform translate-x-full hover:bg-gray-700 transition-colors duration-200"
+            aria-label={isOpen ? "Collapse Sidebar" : "Expand Sidebar"}
           >
             <ChevronLeft
-              size={20}
-              className={`transform transition-transform ${
+              size={18}
+              className={`transform transition-transform duration-300 ${
                 isOpen ? "" : "rotate-180"
               }`}
             />
           </button>
 
-          <h2
-            className={`text-2xl font-bold mb-8 overflow-hidden transition-all ${
-              isOpen ? "opacity-100" : "opacity-0 w-0"
-            }`}
-          >
-            Admin Panel
-          </h2>
-
-          <nav className="space-y-4">
-            <button
-              onClick={() => {
-                onNavigate("upload");
-                if (window.innerWidth < 1024) toggleSidebar();
-              }}
-              className={`flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors w-full text-left
-                ${activeView === "upload" ? "bg-gray-700" : ""}`}
-              title={!isOpen ? "Upload Notes" : ""}
+          <div className="flex items-center mb-8 gap-3">
+            <LayoutDashboard
+              size={28}
+              className="text-blue-400 flex-shrink-0"
+            />
+            <h2
+              className={`text-xl font-bold overflow-hidden transition-all duration-300 ${
+                isOpen ? "opacity-100 w-auto" : "opacity-0 w-0"
+              }`}
             >
-              <Upload size={20} />
-              <span
-                className={`ml-3 transition-all ${
-                  isOpen ? "opacity-100" : "opacity-0 w-0 hidden"
-                }`}
-              >
-                Upload Notes
-              </span>
-            </button>
+              Admin Panel
+            </h2>
+          </div>
 
-            <button
-              onClick={() => {
-                onNavigate("manage");
-                if (window.innerWidth < 1024) toggleSidebar();
-              }}
-              className={`flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors w-full text-left
-                ${activeView === "manage" ? "bg-gray-700" : ""}`}
-              title={!isOpen ? "Manage Notes" : ""}
-            >
-              <FileText size={20} />
-              <span
-                className={`ml-3 transition-all ${
-                  isOpen ? "opacity-100" : "opacity-0 w-0 hidden"
-                }`}
+          <nav className="space-y-2 flex-1">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                  onNavigate(item.id);
+                  if (window.innerWidth < 1024) toggleSidebar();
+                }}
+                className={`
+                  flex items-center p-3 rounded-lg transition-all duration-200 w-full text-left
+                  group relative
+                  ${
+                    activeView === item.id
+                      ? "bg-blue-600 text-white"
+                      : "hover:bg-gray-700/50 text-gray-300 hover:text-white"
+                  }
+                `}
+                title={!isOpen ? item.label : ""}
               >
-                Manage Notes
-              </span>
-            </button>
-
-            <button
-              onClick={() => {
-                onNavigate("transactions");
-                if (window.innerWidth < 1024) toggleSidebar();
-              }}
-              className={`flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors w-full text-left
-                ${activeView === "transactions" ? "bg-gray-700" : ""}`}
-              title={!isOpen ? "Transactions" : ""}
-            >
-              <DollarSign size={20} />
-              <span
-                className={`ml-3 transition-all ${
-                  isOpen ? "opacity-100" : "opacity-0 w-0 hidden"
-                }`}
-              >
-                Transactions
-              </span>
-            </button>
-
-            <button
-              className="flex items-center p-3 rounded-lg hover:bg-gray-700 transition-colors w-full mt-auto"
-              title={!isOpen ? "Logout" : ""}
-            >
-              <LogOut size={20} />
-              <span
-                className={`ml-3 transition-all ${
-                  isOpen ? "opacity-100" : "opacity-0 w-0 hidden"
-                }`}
-              >
-                Logout
-              </span>
-            </button>
+                <item.icon
+                  size={20}
+                  className={`flex-shrink-0 transition-transform duration-200 ${
+                    activeView === item.id ? "transform scale-110" : ""
+                  }`}
+                />
+                <span
+                  className={`ml-3 transition-all duration-300 ${
+                    isOpen ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
+                  }`}
+                >
+                  {item.label}
+                </span>
+                {!isOpen && (
+                  <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                    {item.label}
+                  </div>
+                )}
+              </button>
+            ))}
           </nav>
+
+          <button
+            className="flex items-center p-3 rounded-lg transition-all duration-200 w-full text-left mt-auto
+              group relative hover:bg-red-500/10 text-gray-300 hover:text-red-400"
+            title={!isOpen ? "Logout" : ""}
+          >
+            <LogOut size={20} className="flex-shrink-0" />
+            <span
+              className={`ml-3 transition-all duration-300 ${
+                isOpen ? "opacity-100 w-auto" : "opacity-0 w-0 hidden"
+              }`}
+            >
+              Logout
+            </span>
+            {!isOpen && (
+              <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded-md opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
+                Logout
+              </div>
+            )}
+          </button>
         </div>
-      </div>
+      </aside>
     </>
   );
 };

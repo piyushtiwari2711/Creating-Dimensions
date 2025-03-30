@@ -1,5 +1,13 @@
-import React, { useState,useEffect } from 'react';
-import { DollarSign, Calendar, User, FileText, CreditCard, CheckCircle, Clock } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  DollarSign,
+  Calendar,
+  User,
+  FileText,
+  CreditCard,
+  CheckCircle,
+  Clock,
+} from "lucide-react";
 import { useAdmin } from "../../context/AdminContext";
 const TransactionSkeleton = () => (
   <div className="animate-pulse bg-white rounded-lg shadow-sm p-4 space-y-3">
@@ -19,12 +27,11 @@ const TransactionSkeleton = () => (
 );
 
 function Transaction() {
-  const {loading,transactions,transactionHistory} = useAdmin();
+  const { loading, transactions, transactionHistory } = useAdmin();
 
   useEffect(() => {
     transactionHistory();
-  }, [])
-  
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-8">
@@ -36,7 +43,7 @@ function Transaction() {
               Transaction History
             </h2>
           </div>
-          
+
           <div className="p-4 sm:p-6 space-y-4">
             {loading ? (
               <>
@@ -54,14 +61,22 @@ function Transaction() {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center text-sm text-gray-500 gap-1">
                         <Calendar size={16} />
-                        {new Date(transaction.createdAt._seconds * 1000).toLocaleDateString()}
+                        {new Date(
+                          transaction.createdAt._seconds * 1000
+                        ).toLocaleDateString()}
                       </div>
-                      <span className={`px-2.5 py-0.5 inline-flex items-center gap-1 text-xs font-medium rounded-full ${
-                        transaction.status === 'paid'
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {transaction.status === 'paid' ? <CheckCircle size={14} /> : <Clock size={14} />}
+                      <span
+                        className={`px-2.5 py-0.5 inline-flex items-center gap-1 text-xs font-medium rounded-full ${
+                          transaction.status === "paid"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {transaction.status === "paid" ? (
+                          <CheckCircle size={14} />
+                        ) : (
+                          <Clock size={14} />
+                        )}
                         {transaction.status}
                       </span>
                     </div>
@@ -72,7 +87,7 @@ function Transaction() {
                           {transaction.buyerName}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <FileText size={16} className="text-gray-400" />
                         <span className="text-sm text-gray-700">
@@ -83,7 +98,7 @@ function Transaction() {
                       <div className="flex items-center gap-2">
                         <CreditCard size={16} className="text-gray-400" />
                         <span className="text-sm font-medium text-gray-900">
-                          {(transaction.amount / 100).toFixed(2)} {transaction.currency}
+                          {transaction.amount.toFixed(2)} {transaction.currency}
                         </span>
                       </div>
                     </div>
