@@ -4,6 +4,8 @@ const authRouter = require("./auth");
 const userRouter = require("./user");
 const notesRouter = require("./notes");
 const paymentRouter = require('./payment')
+const adminRouter = require('./admin')
+
 const {authenticateUser} = require('../middleware/auth')
 //auth
 //user
@@ -12,6 +14,7 @@ const {authenticateUser} = require('../middleware/auth')
 router.get("/", (req, res) => {
   res.send("hi from root router");
 });
+router.use("/admin",adminRouter);
 router.use("/auth", authRouter);
 router.use("/user",authenticateUser, userRouter);
 router.use("/notes",authenticateUser, notesRouter);
