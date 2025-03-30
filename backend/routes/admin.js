@@ -1,14 +1,35 @@
 const express = require("express");
 const multer = require("multer");
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 const cloudinary = require("../config/cloudinary");
 const slugify = require("slugify");
 const { db } = require("../config/firebase");
 
 const router = express.Router();
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-// 🔥 Upload a Note
+// ✅ Function to upload files to Cloudinary
+const cloudinaryUpload = (fileBuffer, resourceType, format, folderPath, fileName) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: resourceType,
+        format: format || undefined,
+        folder: folderPath,
+        public_id: fileName,
+      },
+      (error, result) => {
+        if (error) {
+          console.error("Cloudinary Upload Error:", error);
+          return reject(error);
+        }
+        resolve(result);
+      }
+    );
+    uploadStream.end(fileBuffer);
+  });
+};
+// ✅ Upload a Note
 router.post(
   "/notes/upload",
   upload.fields([
@@ -31,20 +52,17 @@ router.post(
       const folderPath = `notes/${slugify(category, { lower: true })}/${slugify(subject, { lower: true })}`;
       const fileName = `${slugify(title, { lower: true })}_${Date.now()}`;
 
-      const cloudinaryUpload = (fileBuffer, resourceType, format) => {
-        return new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            { resource_type: resourceType, format, folder: folderPath, public_id: fileName },
-            (error, result) => (error ? reject(error) : resolve(result))
-          );
-          uploadStream.end(fileBuffer);
-        });
-      };
+      console.log("Uploading PDF & Image...");
 
-      const [pdfResult, imgResult] = await Promise.all([
-        cloudinaryUpload(req.files.pdf[0].buffer, "raw", ""),
-        cloudinaryUpload(req.files.image[0].buffer, "image", "jpg"),
-      ]);
+      const base64Pdf = req.files.pdf[0].buffer.toString("base64");
+      const pdfUploadPromise = cloudinary.uploader.upload(
+        `data:application/pdf;base64,${base64Pdf}`,
+        { resource_type: "auto", folder: folderPath, public_id: fileName }
+      );
+
+      const imageUploadPromise = cloudinaryUpload(req.files.image[0].buffer, "image", "jpg", folderPath, fileName);
+
+      const [pdfResult, imgResult] = await Promise.all([pdfUploadPromise, imageUploadPromise]);
 
       const noteData = {
         title,
@@ -77,8 +95,7 @@ router.post(
     }
   }
 );
-
-// 🔄 Edit a Note
+// ✅ Edit a Note
 router.put(
   "/categories/:category/subjects/:subject/notes/:noteId",
   upload.fields([
@@ -90,12 +107,12 @@ router.put(
       let { category, subject, noteId } = req.params;
       category = category.toLowerCase();
       subject = subject.toLowerCase();
-      
+
       const { title, description, price } = req.body;
       if (!title && !description && !price && !req.files?.pdf && !req.files?.image) {
         return res.status(400).json({ error: "No updates provided" });
       }
-      
+
       const noteRef = db
         .collection("categories")
         .doc(category)
@@ -103,55 +120,45 @@ router.put(
         .doc(subject)
         .collection("notes")
         .doc(noteId);
-      
+
       await db.runTransaction(async (transaction) => {
         const noteSnapshot = await transaction.get(noteRef);
         if (!noteSnapshot.exists) {
           throw new Error("Note not found");
         }
-        
+
         const noteData = noteSnapshot.data();
         let updates = {};
-        
+
         if (title) updates.title = title;
         if (description) updates.description = description;
         if (price) updates.price = Number(price);
-        
-        // Handle PDF update
+
         if (req.files?.pdf) {
           if (noteData.pdfCloudinaryId) {
             await cloudinary.uploader.destroy(noteData.pdfCloudinaryId, { resource_type: "raw" });
           }
-          const pdfResult = await new Promise((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-              { resource_type: "raw", format: "pdf", folder: noteData.cloudinaryFolder },
-              (error, result) => (error ? reject(error) : resolve(result))
-            );
-            uploadStream.end(req.files.pdf[0].buffer);
-          });
+          const base64Pdf = req.files.pdf[0].buffer.toString("base64");
+          const pdfResult = await cloudinary.uploader.upload(
+            `data:application/pdf;base64,${base64Pdf}`,
+            { resource_type: "auto", folder: noteData.cloudinaryFolder }
+          );
           updates.pdfUrl = pdfResult.secure_url;
           updates.pdfCloudinaryId = pdfResult.public_id;
         }
-        
-        // Handle Image update
+
         if (req.files?.image) {
           if (noteData.imgCloudinaryId) {
             await cloudinary.uploader.destroy(noteData.imgCloudinaryId, { resource_type: "image" });
           }
-          const imgResult = await new Promise((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-              { resource_type: "image", format: "jpg", folder: noteData.cloudinaryFolder },
-              (error, result) => (error ? reject(error) : resolve(result))
-            );
-            uploadStream.end(req.files.image[0].buffer);
-          });
+          const imgResult = await cloudinaryUpload(req.files.image[0].buffer, "image", "jpg", noteData.cloudinaryFolder, noteId);
           updates.imgUrl = imgResult.secure_url;
           updates.imgCloudinaryId = imgResult.public_id;
         }
-        
+
         transaction.update(noteRef, updates);
       });
-      
+
       return res.status(200).json({ message: "Note updated successfully" });
     } catch (error) {
       console.error("Edit Error:", error);
@@ -159,8 +166,7 @@ router.put(
     }
   }
 );
-
-// ❌ Delete a Note
+// ✅ Delete a Note
 router.delete("/categories/:category/subjects/:subject/notes/:noteId", async (req, res) => {
   try {
     let { category, subject, noteId } = req.params;
@@ -190,7 +196,6 @@ router.delete("/categories/:category/subjects/:subject/notes/:noteId", async (re
     return res.status(500).json({ error: "Failed to delete note", details: error.message });
   }
 });
-
 // 📝 Get All Notes
 router.get("/notes", async (req, res) => {
   try {
@@ -222,4 +227,70 @@ router.get("/notes", async (req, res) => {
     return res.status(500).json({ error: "Failed to fetch notes", details: error.message });
   }
 });
+
+router.get("/transactions", async (req, res) => {
+  try {
+    // Fetch all orders
+    const ordersSnap = await db.collection("orders").get();
+
+    if (ordersSnap.empty) {
+      return res.status(200).json({ success: true, transactions: [] });
+    }
+
+    const transactions = [];
+    const noteIds = new Set();
+    const userIds = new Set();
+
+    // Collect all note IDs and user IDs to batch fetch
+    ordersSnap.docs.forEach((orderDoc) => {
+      const orderData = orderDoc.data();
+      if (orderData.noteId) noteIds.add(orderData.noteId);
+      if (orderData.userId) userIds.add(orderData.userId);
+    });
+
+    // Fetch all categories
+    const categoriesSnap = await db.collection("categories").get();
+    const notesMap = new Map();
+
+    // Loop through categories -> subjects -> notes
+    for (const categoryDoc of categoriesSnap.docs) {
+      const subjectsSnap = await categoryDoc.ref.collection("subjects").get();
+      for (const subjectDoc of subjectsSnap.docs) {
+        const notesSnap = await subjectDoc.ref.collection("notes").get();
+        notesSnap.docs.forEach((noteDoc) => {
+          if (noteIds.has(noteDoc.id)) {
+            notesMap.set(noteDoc.id, noteDoc.data().title);
+          }
+        });
+      }
+    }
+
+    // Fetch all users in a single query
+    const usersSnap = await db.collection("users")
+      .where("__name__", "in", Array.from(userIds))
+      .get();
+    const usersMap = new Map();
+    usersSnap.docs.forEach((userDoc) => {
+      usersMap.set(userDoc.id, userDoc.data().name); // Assuming 'name' field exists
+    });
+
+    // Build transactions response
+    ordersSnap.docs.forEach((orderDoc) => {
+      const orderData = orderDoc.data();
+      transactions.push({
+        id: orderDoc.id,
+        noteTitle: notesMap.get(orderData.noteId) || "Unknown Note Title",
+        buyerName: usersMap.get(orderData.userId) || "Unknown Buyer",
+        ...orderData,
+      });
+    });
+
+    return res.status(200).json({ success: true, transactions });
+  } catch (error) {
+    console.error("Error fetching admin transactions:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+
 module.exports = router;

@@ -1,128 +1,128 @@
-import React, { useState } from "react";
-import { Upload } from "lucide-react";
+  import React, { useState, useRef } from "react";
+  import { Upload } from "lucide-react";
+  import toast from "react-hot-toast";
 
-const NoteForm = ({ onSubmit, initialData, isEdit = false }) => {
-  const [title, setTitle] = useState(initialData?.title || "");
-  const [description, setDescription] = useState(
-    initialData?.description || ""
-  );
-  const [price, setPrice] = useState(initialData?.price || 0);
-  const [category, setCategory] = useState(initialData?.category || "");
-  const [subject, setSubject] = useState(initialData?.subject || "");
-  const [pdfFile, setPdfFile] = useState(null);
-  const [imageFile, setImageFile] = useState(null);
+  const NoteForm = ({ onSubmit, initialData = {}, isEdit = false }) => {
+    const formRef = useRef(null);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("price", price.toString());
-    formData.append("category", category);
-    formData.append("subject", subject);
-    if (pdfFile) formData.append("pdf", pdfFile);
-    if (imageFile) formData.append("image", imageFile);
-    onSubmit(formData);
+    // State for form data
+    const [formData, setFormData] = useState({
+      title: initialData.title || "",
+      description: initialData.description || "",
+      category: initialData.category || "",
+      subject: initialData.subject || "",
+      price: initialData.price || 0,
+      pdf: null,
+      image: null,
+    });
+
+    const [previewImage, setPreviewImage] = useState(null);
+
+    // Handle text and number inputs
+    const handleChange = (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({
+        ...prev,
+        [name]: name === "price" ? Number(value) : value, // Ensure price is a number
+      }));
+    };
+
+    // Handle file inputs
+    const handleFileChange = (e) => {
+      const { name, files } = e.target;
+      if (files.length > 0) {
+        const file = files[0];
+
+        if (name === "imageFile") {
+          if (previewImage) URL.revokeObjectURL(previewImage);
+          setPreviewImage(URL.createObjectURL(file));
+        }
+
+        setFormData((prev) => ({
+          ...prev,
+          [name]: file,
+        }));
+      }
+    };
+
+    // Handle form submission
+    const handleSubmit = (e) => {
+      e.preventDefault();
+
+      if (formData.price < 0) {
+        toast.error("Price cannot be negative.");
+        return;
+      }
+
+      // toast.success(isEdit ? "Note updated successfully!" : "Note uploaded successfully!");
+      onSubmit(formData);
+
+      // Reset form state
+      setFormData({
+        title: "",
+        description: "",
+        category: "",
+        subject: "",
+        price: 0,
+        pdf: null,
+        image: null,
+      });
+
+      setPreviewImage(null);
+      formRef.current.reset();
+    };
+
+    return (
+      <form ref={formRef} onSubmit={handleSubmit} className="space-y-6">
+        {Object.entries({ title: "Title", description: "Description", category: "Category", subject: "Subject" }).map(
+          ([key, label]) => (
+            <div key={key}>
+              <label className="block text-sm font-medium text-gray-700">{label}</label>
+              <input
+                type="text"
+                name={key}
+                value={formData[key]}
+                onChange={handleChange}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                required
+              />
+            </div>
+          )
+        )}
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Price</label>
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            min="0"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">PDF File</label>
+          <input type="file" name="pdf" accept=".pdf" onChange={handleFileChange} className="mt-1 block w-full" required={!isEdit} />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Note Image</label>
+          <input type="file" name="image" accept="image/*" onChange={handleFileChange} className="mt-1 block w-full" required={!isEdit} />
+          {previewImage && <img src={previewImage} alt="Preview" className="mt-2 max-w-xs rounded-md" />}
+        </div>
+
+        <button
+          type="submit"
+          className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          <Upload className="w-4 h-4 mr-2" />
+          {isEdit ? "Update Note" : "Upload Note"}
+        </button>
+      </form>
+    );
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Title</label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Description
-        </label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={4}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">Price</label>
-        <input
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(Number(e.target.value))}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Category
-        </label>
-        <input
-          type="text"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Subject
-        </label>
-        <input
-          type="text"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          required
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          PDF File
-        </label>
-        <input
-          type="file"
-          accept=".pdf"
-          onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-          className="mt-1 block w-full"
-          required={!isEdit}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700">
-          Note Image
-        </label>
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-          className="mt-1 block w-full"
-          required={!isEdit}
-        />
-      </div>
-
-      <button
-        type="submit"
-        className="flex items-center justify-center w-full px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        <Upload className="w-4 h-4 mr-2" />
-        {isEdit ? "Update Note" : "Upload Note"}
-      </button>
-    </form>
-  );
-};
-
-export default NoteForm;
+  export default NoteForm;

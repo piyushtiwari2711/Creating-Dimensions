@@ -1,49 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import NoteForm from "./NoteForm";
 import NoteCard from "./NoteCard";
 import PdfPreview from "./PdfPreview";
 import Transactions from "./Transaction";
-
-const mockNotes = [
-  {
-    id: "1",
-    title: "Introduction to Calculus",
-    description:
-      "Comprehensive notes covering basic calculus concepts including limits, derivatives, and integrals.",
-    price: 29.99,
-    category: "Mathematics",
-    subject: "Calculus",
-    imageUrl:
-      "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&q=80&w=800",
-    pdfUrl:
-      "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-  },
-  {
-    id: "2",
-    title: "Organic Chemistry Fundamentals",
-    description:
-      "Detailed notes on organic chemistry basics, including molecular structures and reactions.",
-    price: 34.99,
-    category: "Science",
-    subject: "Chemistry",
-    imageUrl:
-      "https://images.unsplash.com/photo-1532634993-15f421e42ec0?auto=format&fit=crop&q=80&w=800",
-    pdfUrl:
-      "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
-  },
-];
+import { useAdmin } from "../../context/AdminContext";
+import toast from "react-hot-toast";
 
 const Admin = () => {
+  const { fetchNotes, notes, uploadNote, editNote, deleteNote } = useAdmin();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeView, setActiveView] = useState("manage");
-  const [notes, setNotes] = useState(mockNotes);
   const [editingNote, setEditingNote] = useState(null);
   const [previewPdfUrl, setPreviewPdfUrl] = useState(null);
 
-  const handleNoteSubmit = (formData) => {
-    console.log("Form submitted:", formData);
-    setActiveView("manage");
+  const handleNoteSubmit = async (formData) => {
+    try {
+      if (editingNote) {
+        await editNote(editingNote.category, editingNote.subject, editingNote.id, formData);
+        toast.success("Note edited successfully!");
+      } else {
+        await uploadNote(formData);
+        toast.success("Note uploaded successfully!");
+      }
+      setActiveView("manage");
+    } catch (error) {
+      toast.error("Error submitting note!");
+      console.error("Error submitting note:", error);
+    }
   };
 
   const handleEdit = (note) => {
@@ -51,8 +35,14 @@ const Admin = () => {
     setActiveView("upload");
   };
 
-  const handleDelete = (id) => {
-    setNotes(notes.filter((note) => note.id !== id));
+  const handleDelete = async (note) => {
+    try {
+      await deleteNote(note.category, note.subject, note.id);
+      toast.success("Note deleted successfully!");
+    } catch (error) {
+      toast.error("Error deleting note!");
+      console.error("Error deleting note:", error);
+    }
   };
 
   const handleNavigate = (view) => {
@@ -65,6 +55,17 @@ const Admin = () => {
   const handlePreviewPdf = (pdfUrl) => {
     setPreviewPdfUrl(pdfUrl);
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        await fetchNotes();
+      } catch (error) {
+        console.error("Error fetching notes:", error);
+      }
+    };
+    fetchData();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -118,7 +119,7 @@ const Admin = () => {
                   key={note.id}
                   note={note}
                   onEdit={handleEdit}
-                  onDelete={handleDelete}
+                  onDelete={() => handleDelete(note)}
                   onPreview={handlePreviewPdf}
                 />
               ))}

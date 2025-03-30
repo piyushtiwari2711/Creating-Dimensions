@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { Edit2, Trash2, Eye } from "lucide-react";
 
 const NoteCard = ({ note, onEdit, onDelete, onPreview }) => {
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden">
       <img
-        src={note.imageUrl}
+        src={note.imgUrl}
         alt={note.title}
         className="w-full h-48 object-cover"
       />
@@ -15,7 +15,7 @@ const NoteCard = ({ note, onEdit, onDelete, onPreview }) => {
           {note.description}
         </p>
         <div className="mt-2 flex items-center justify-between">
-          <span className="text-indigo-600 font-medium">${note.price}</span>
+          <span className="text-indigo-600 font-medium">₹ {note.price}</span>
           <div className="flex space-x-2">
             {note.pdfUrl && (
               <button

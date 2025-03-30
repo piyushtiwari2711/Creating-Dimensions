@@ -6,6 +6,7 @@ const AdminContext = createContext();
 
 export const AdminProvider = ({ children }) => {
   const [notes, setNotes] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -66,9 +67,22 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
+  // Transactions
+  const transactionHistory = async ()=>{
+    setLoading(true);
+    try {
+      const response = await axios.delete(`${BASE_URL}/transactions`);
+      setTransactions(response.data.transactions);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
 
   return (
-    <AdminContext.Provider value={{fetchNotes, notes, loading, error, uploadNote, editNote, deleteNote }}>
+    <AdminContext.Provider value={{fetchNotes, notes, loading, error, uploadNote, editNote, deleteNote,transactionHistory,transactions}}>
       {children}
     </AdminContext.Provider>
   );
