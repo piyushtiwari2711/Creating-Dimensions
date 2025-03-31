@@ -1,34 +1,22 @@
 const express = require("express");
 const multer = require("multer");
 const cloudinary = require("../config/cloudinary");
+const { google } = require("googleapis");
 const slugify = require("slugify");
 const { db } = require("../config/firebase");
-
+const stream = require("stream");
+const path = require("path");
 const router = express.Router();
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+const auth = new google.auth.GoogleAuth({
+  keyFile: path.resolve(__dirname, "../diesel-boulder-454214-i0-fc9996822f0f.json"),
+  scopes: ["https://www.googleapis.com/auth/drive"],
+});
 
-// ✅ Function to upload files to Cloudinary
-const cloudinaryUpload = (fileBuffer, resourceType, format, folderPath, fileName) => {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        resource_type: resourceType,
-        format: format || undefined,
-        folder: folderPath,
-        public_id: fileName,
-      },
-      (error, result) => {
-        if (error) {
-          console.error("Cloudinary Upload Error:", error);
-          return reject(error);
-        }
-        resolve(result);
-      }
-    );
-    uploadStream.end(fileBuffer);
-  });
-};
+// Create drive client
+const drive = google.drive({ version: "v3", auth });
+
 // ✅ Upload a Note
 router.post(
   "/notes/upload",
@@ -54,15 +42,35 @@ router.post(
 
       console.log("Uploading PDF & Image...");
 
+      // Upload PDF to Cloudinary
       const base64Pdf = req.files.pdf[0].buffer.toString("base64");
       const pdfUploadPromise = cloudinary.uploader.upload(
         `data:application/pdf;base64,${base64Pdf}`,
         { resource_type: "auto", folder: folderPath, public_id: fileName }
       );
 
+      // Upload image to Cloudinary
       const imageUploadPromise = cloudinaryUpload(req.files.image[0].buffer, "image", "jpg", folderPath, fileName);
 
-      const [pdfResult, imgResult] = await Promise.all([pdfUploadPromise, imageUploadPromise]);
+      // Upload PDF to Google Drive
+      const driveFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID || "root"; // Default to root if not configured
+      const driveFileName = `${category}_${subject}_${fileName}.pdf`;
+      const driveUploadPromise = googleDriveUpload(
+        req.files.pdf[0].buffer,
+        driveFileName,
+        "application/pdf",
+        driveFolderId
+      );
+
+      // Wait for all uploads to complete
+      const [pdfResult, imgResult, driveFileId] = await Promise.all([
+        pdfUploadPromise,
+        imageUploadPromise,
+        driveUploadPromise
+      ]);
+
+      // Generate initial drive link
+      const driveLink = await generateDriveLink(driveFileId);
 
       const noteData = {
         title,
@@ -72,6 +80,8 @@ router.post(
         pdfCloudinaryId: pdfResult.public_id,
         imgUrl: imgResult.secure_url,
         imgCloudinaryId: imgResult.public_id,
+        driveFileId: driveFileId,
+        driveUrl: driveLink,
         cloudinaryFolder: folderPath,
         createdAt: Date.now(),
       };
@@ -95,6 +105,7 @@ router.post(
     }
   }
 );
+
 // ✅ Edit a Note
 router.put(
   "/categories/:category/subjects/:subject/notes/:noteId",
@@ -135,23 +146,62 @@ router.put(
         if (price) updates.price = Number(price);
 
         if (req.files?.pdf) {
+          // Delete old PDF from Cloudinary
           if (noteData.pdfCloudinaryId) {
             await cloudinary.uploader.destroy(noteData.pdfCloudinaryId, { resource_type: "raw" });
           }
+          
+          // Delete old PDF from Google Drive
+          if (noteData.driveFileId) {
+            try {
+              await drive.files.delete({ fileId: noteData.driveFileId });
+            } catch (driveError) {
+              console.error("Failed to delete old Drive file:", driveError);
+              // Continue with the update even if Drive delete fails
+            }
+          }
+          
+          // Upload new PDF to Cloudinary
           const base64Pdf = req.files.pdf[0].buffer.toString("base64");
           const pdfResult = await cloudinary.uploader.upload(
             `data:application/pdf;base64,${base64Pdf}`,
             { resource_type: "auto", folder: noteData.cloudinaryFolder }
           );
+          
+          // Upload new PDF to Google Drive
+          const driveFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID || "root";
+          const driveFileName = `${category}_${subject}_${slugify(title || noteData.title, { lower: true })}_${Date.now()}.pdf`;
+          const driveFileId = await googleDriveUpload(
+            req.files.pdf[0].buffer,
+            driveFileName,
+            "application/pdf",
+            driveFolderId
+          );
+          
+          // Generate new Drive link
+          const driveLink = await generateDriveLink(driveFileId);
+          
           updates.pdfUrl = pdfResult.secure_url;
           updates.pdfCloudinaryId = pdfResult.public_id;
+          updates.driveFileId = driveFileId;
+          updates.driveUrl = driveLink;
         }
 
         if (req.files?.image) {
+          // Delete old image from Cloudinary
           if (noteData.imgCloudinaryId) {
             await cloudinary.uploader.destroy(noteData.imgCloudinaryId, { resource_type: "image" });
           }
-          const imgResult = await cloudinaryUpload(req.files.image[0].buffer, "image", "jpg", noteData.cloudinaryFolder, noteId);
+          
+          // Upload new image to Cloudinary
+          const imgResult = await cloudinaryUpload(
+            req.files.image[0].buffer, 
+            "image", 
+            "jpg", 
+            noteData.cloudinaryFolder, 
+            noteId
+          );
+          
           updates.imgUrl = imgResult.secure_url;
           updates.imgCloudinaryId = imgResult.public_id;
         }
@@ -166,6 +216,7 @@ router.put(
     }
   }
 );
+
 // ✅ Delete a Note
 router.delete("/categories/:category/subjects/:subject/notes/:noteId", async (req, res) => {
   try {
@@ -182,9 +233,14 @@ router.delete("/categories/:category/subjects/:subject/notes/:noteId", async (re
       }
 
       const noteData = noteSnapshot.data();
+      
+      // Delete from Cloudinary and Google Drive
       await Promise.all([
+        // Delete from Cloudinary
         noteData.pdfCloudinaryId ? cloudinary.uploader.destroy(noteData.pdfCloudinaryId, { resource_type: "raw" }) : Promise.resolve(),
         noteData.imgCloudinaryId ? cloudinary.uploader.destroy(noteData.imgCloudinaryId, { resource_type: "image" }) : Promise.resolve(),
+        // Delete from Google Drive
+        noteData.driveFileId ? drive.files.delete({ fileId: noteData.driveFileId }).catch(err => console.error("Drive delete error:", err)) : Promise.resolve()
       ]);
 
       transaction.delete(noteRef);
@@ -196,6 +252,7 @@ router.delete("/categories/:category/subjects/:subject/notes/:noteId", async (re
     return res.status(500).json({ error: "Failed to delete note", details: error.message });
   }
 });
+
 // 📝 Get All Notes
 router.get("/notes", async (req, res) => {
   try {
@@ -228,6 +285,7 @@ router.get("/notes", async (req, res) => {
   }
 });
 
+// Get all transactions
 router.get("/transactions", async (req, res) => {
   try {
     // Fetch all orders
@@ -292,5 +350,127 @@ router.get("/transactions", async (req, res) => {
   }
 });
 
+// Helper function for Cloudinary uploads
+const cloudinaryUpload = (fileBuffer, resourceType, format, folderPath, fileName) => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: resourceType,
+        format: format || undefined,
+        folder: folderPath,
+        public_id: fileName,
+      },
+      (error, result) => {
+        if (error) return reject(error);
+        resolve(result);
+      }
+    );
+    uploadStream.end(fileBuffer);
+  });
+};
+
+// ✅ Upload to Google Drive
+const googleDriveUpload = async (fileBuffer, fileName, mimeType, folderId) => {
+  const bufferStream = new stream.PassThrough();
+  bufferStream.end(fileBuffer);
+
+  const fileMetadata = {
+    name: fileName,
+    parents: [folderId],
+  };
+  const media = {
+    mimeType,
+    body: bufferStream,
+  };
+
+  const file = await drive.files.create({
+    resource: fileMetadata,
+    media,
+    fields: "id",
+  });
+  return file.data.id;
+};
+
+// ✅ Generate Expiring Drive Link
+const generateDriveLink = async (fileId) => {
+  await drive.permissions.create({
+    fileId,
+    requestBody: {
+      role: "reader",
+      type: "anyone",
+      // expirationTime: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(), // 24 hours expiry
+    },
+  });
+
+  const file = await drive.files.get({
+    fileId,
+    fields: "webViewLink",
+  });
+
+  await drive.files.update({
+    fileId,
+    requestBody: {
+      copyRequiresWriterPermission: true, // Prevents copying
+    },
+  });
+
+  return file.data.webViewLink;
+};
+
+
+// ✅ Generate Expiring Download Links
+router.get("/download/:noteId", async (req, res) => {
+  try {
+    // Find the note in the correct path in Firestore
+    const categoriesSnapshot = await db.collection("categories").get();
+    let noteDoc = null;
+    let noteData = null;
+    
+    // Search through the hierarchy to find the note
+    for (const categoryDoc of categoriesSnapshot.docs) {
+      if (noteDoc) break;
+      const subjectsSnapshot = await categoryDoc.ref.collection("subjects").get();
+      
+      for (const subjectDoc of subjectsSnapshot.docs) {
+        if (noteDoc) break;
+        const noteSnapshot = await subjectDoc.ref.collection("notes").doc(req.params.noteId).get();
+        
+        if (noteSnapshot.exists) {
+          noteDoc = noteSnapshot;
+          noteData = noteSnapshot.data();
+          break;
+        }
+      }
+    }
+    
+    if (!noteDoc) {
+      return res.status(404).json({ error: "Note not found" });
+    }
+
+    // Generate a fresh Drive link if we have a Drive file ID
+    let driveDownloadUrl = null;
+    if (noteData.driveFileId) {
+      try {
+        driveDownloadUrl = await generateDriveLink(noteData.driveFileId);
+      } catch (driveError) {
+        console.error("Failed to generate Drive link:", driveError);
+        // Continue with just the Cloudinary URL if Drive link fails
+      }
+    }
+
+    const response = {
+      cloudinaryDownloadUrl: noteData.pdfUrl,
+    };
+    
+    if (driveDownloadUrl) {
+      response.driveDownloadUrl = driveDownloadUrl;
+    }
+
+    return res.status(200).json(response);
+  } catch (error) {
+    console.error("Download Error:", error);
+    return res.status(500).json({ error: "Failed to generate download links", details: error.message });
+  }
+});
 
 module.exports = router;
