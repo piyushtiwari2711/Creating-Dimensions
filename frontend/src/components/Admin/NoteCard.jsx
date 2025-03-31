@@ -19,7 +19,7 @@ const NoteCard = ({ note, onEdit, onDelete, onPreview }) => {
           <div className="flex space-x-2">
             {note.pdfUrl && (
               <button
-                onClick={() => onPreview(note.pdfUrl)}
+                onClick={() => window.open(note.driveUrl, "_blank")}
                 className="p-2 text-gray-600 hover:text-indigo-600 transition-colors"
                 title="Preview PDF"
               >

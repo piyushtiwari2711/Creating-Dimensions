@@ -90,7 +90,7 @@ const PurchasedNotes = () => {
                   </span>
                 </div>
                 <button
-                  onClick={() => handleDownload(note.pdfUrl)}
+                  onClick={() => handleDownload(note.driveUrl)}
                   className="inline-flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                 >
                   <Download size={18} />

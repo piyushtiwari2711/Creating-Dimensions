@@ -5,7 +5,7 @@ import {
   Upload,
   Menu,
   ChevronLeft,
-  DollarSign,
+  IndianRupee,
   LayoutDashboard,
 } from "lucide-react";
 
@@ -14,7 +14,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavigate, activeView }) => {
   const navItems = [
     { id: 'upload', icon: Upload, label: 'Upload Notes' },
     { id: 'manage', icon: FileText, label: 'Manage Notes' },
-    { id: 'transactions', icon: DollarSign, label: 'Transactions' },
+    { id: 'transactions', icon: IndianRupee, label: 'Transactions' },
   ];
 
   return (

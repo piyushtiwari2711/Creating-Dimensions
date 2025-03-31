@@ -1,5 +1,5 @@
 import React, { useState,useEffect } from 'react';
-import { DollarSign, Calendar, User, FileText, CreditCard, CheckCircle, Clock } from 'lucide-react';
+import { IndianRupee, Calendar, User, FileText, CreditCard, CheckCircle, Clock } from 'lucide-react';
 import { useAdmin } from "../../context/AdminContext";
 const TransactionSkeleton = () => (
   <div className="animate-pulse bg-white rounded-lg shadow-sm p-4 space-y-3">
@@ -32,7 +32,7 @@ function Transaction() {
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="p-4 sm:p-6 bg-gray-50 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-              <DollarSign className="text-indigo-600" />
+              <IndianRupee className="text-indigo-600" />
               Transaction History
             </h2>
           </div>
