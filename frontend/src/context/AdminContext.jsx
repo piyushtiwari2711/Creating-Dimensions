@@ -71,7 +71,7 @@ export const AdminProvider = ({ children }) => {
   const transactionHistory = async ()=>{
     setLoading(true);
     try {
-      const response = await axios.delete(`${BASE_URL}/transactions`);
+      const response = await axios.get(`${BASE_URL}/transactions`);
       setTransactions(response.data.transactions);
     } catch (err) {
       setError(err.message);
