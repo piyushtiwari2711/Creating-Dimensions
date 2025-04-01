@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Mail, Phone, MapPin, X } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { updateProfile } from "firebase/auth";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { toast } from "react-hot-toast";
 
@@ -12,11 +12,36 @@ const Profile = () => {
   const [editForm, setEditForm] = useState({
     displayName: user.displayName || "",
     email: user.email || "",
-    phone: user.phone || "",
-    address: user.address || "",
+    phoneNumber: "",
+    address: "", // will be updated from Firestore
   });
 
   const [error, setError] = useState(null);
+
+  // Fetch user data from Firestore
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (user?.uid) {
+        try {
+          const userRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userRef);
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            setEditForm((prev) => ({
+              ...prev,  
+              phoneNumber:userData.phoneNumber,
+              address: userData.address || "", // update address if exists in Firestore
+            }));
+          }
+        } catch (err) {
+          console.error("Error fetching user data:", err);
+          toast.error("Failed to fetch user data!");
+        }
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
 
   // Handle Input Change
   const handleInputChange = (e) => {
@@ -35,16 +60,25 @@ const Profile = () => {
       // Update Firebase Authentication Profile
       await updateProfile(user, {
         displayName: editForm.displayName,
+        phoneNumber: editForm.phoneNumber,
       });
+      await user.reload();
 
       // Update Firestore
-      const userRef = doc(db, "Users", user.uid);
+      const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, {
         displayName: editForm.displayName,
-        phone: editForm.phone,
+        phoneNumber: editForm.phoneNumber,
         address: editForm.address,
       });
 
+      setEditForm({
+        ...editForm,
+        displayName: editForm.displayName,
+        phoneNumber: editForm.phoneNumber,
+        address: editForm.address,
+      });
+      console.log(editForm)
       toast.success("Profile updated successfully!");
       setIsEditing(false);
     } catch (err) {
@@ -102,8 +136,8 @@ const Profile = () => {
                 <Phone className="text-gray-500" size={20} />
                 <input
                   type="tel"
-                  name="phone"
-                  value={editForm.phone}
+                  name="phoneNumber"
+                  value={editForm.phoneNumber}
                   onChange={handleInputChange}
                   className="flex-1 border-b border-gray-300 focus:border-blue-500 focus:outline-none"
                 />
@@ -133,8 +167,8 @@ const Profile = () => {
                     setEditForm({
                       displayName: user.displayName,
                       email: user.email,
-                      phone: user.phone,
-                      address: user.address,
+                      phoneNumber: user.phoneNumber,
+                      address: user.address || "", // reset to original address
                     });
                     setError(null);
                   }}
@@ -153,11 +187,11 @@ const Profile = () => {
                 </div>
                 <div className="flex items-center gap-3">
                   <Phone className="text-gray-500" size={20} />
-                  <span>{user.phone || "Not set"}</span>
+                  <span>{editForm.phoneNumber || "Not set"}</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <MapPin className="text-gray-500" size={20} />
-                  <span>{user.address || "Not set"}</span>
+                  <span>{editForm.address || "Not set"}</span>
                 </div>
               </div>
 

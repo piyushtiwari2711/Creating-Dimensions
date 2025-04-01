@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // Listen for authentication state changes
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
+      if (currentUser.emailVerified) {
         await currentUser.reload();
         setUser(auth.currentUser);
         localStorage.setItem('token',auth.currentUser.accessToken);
@@ -67,6 +67,7 @@ export const AuthProvider = ({ children }) => {
         uid: user.uid,
         email: user.email,
         displayName,
+        role:'user',
         emailVerified: false, // Store as false initially
         createdAt: serverTimestamp(),
       });
@@ -131,6 +132,7 @@ export const AuthProvider = ({ children }) => {
           displayName: user.displayName,
           photoURL: user.photoURL,
           provider: "Google",
+          role:'user',
           emailVerified: true, // Google emails are always verified
           createdAt: serverTimestamp(),
         });

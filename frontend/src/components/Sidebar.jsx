@@ -87,9 +87,9 @@ const Sidebar = ({
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-gray-800">
-              {user.displayName}
+              {user?.displayName}
             </p>
-            <p className="text-xs text-gray-500">{user.email}</p>
+            <p className="text-xs text-gray-500">{user?.email}</p>
           </div>
         </div>
         <button

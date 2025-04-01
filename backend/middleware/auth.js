@@ -22,7 +22,7 @@ const authenticateUser = async (req, res, next) => {
       email: decodedToken.email,
       fullName: decodedToken.name,
     };
-
+    console.log(decodedToken);
     next(); // Proceed to the next middleware or route handler
   } catch (error) {
     console.error("Authentication Error:", error);

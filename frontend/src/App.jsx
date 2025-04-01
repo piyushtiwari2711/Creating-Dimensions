@@ -5,9 +5,9 @@ import Signin from "./pages/Signin";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import AdminComponent from "./pages/Admin";
-import ProtectedRoutes from "./components/ProtectedRoutes";
 
 const App = () => {
+  
   return (
     <Routes>
       <Route path="/" element={<Home />} />

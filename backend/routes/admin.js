@@ -398,6 +398,8 @@ const generateDriveLink = async (fileId) => {
     requestBody: {
       role: "reader",
       type: "anyone",
+      allowFileDiscovery:false
+      // domain: 'http://localhost:5173',
       // expirationTime: new Date(Date.now() + 1 * 60 * 60 * 1000).toISOString(), // 24 hours expiry
     },
   });
@@ -407,70 +409,14 @@ const generateDriveLink = async (fileId) => {
     fields: "webViewLink",
   });
 
-  await drive.files.update({
-    fileId,
-    requestBody: {
-      copyRequiresWriterPermission: true, // Prevents copying
-    },
-  });
+  // await drive.files.update({
+  //   fileId,
+  //   requestBody: {
+  //     copyRequiresWriterPermission: true,
+  //   },
+  // });
 
   return file.data.webViewLink;
 };
-
-
-// ✅ Generate Expiring Download Links
-router.get("/download/:noteId", async (req, res) => {
-  try {
-    // Find the note in the correct path in Firestore
-    const categoriesSnapshot = await db.collection("categories").get();
-    let noteDoc = null;
-    let noteData = null;
-    
-    // Search through the hierarchy to find the note
-    for (const categoryDoc of categoriesSnapshot.docs) {
-      if (noteDoc) break;
-      const subjectsSnapshot = await categoryDoc.ref.collection("subjects").get();
-      
-      for (const subjectDoc of subjectsSnapshot.docs) {
-        if (noteDoc) break;
-        const noteSnapshot = await subjectDoc.ref.collection("notes").doc(req.params.noteId).get();
-        
-        if (noteSnapshot.exists) {
-          noteDoc = noteSnapshot;
-          noteData = noteSnapshot.data();
-          break;
-        }
-      }
-    }
-    
-    if (!noteDoc) {
-      return res.status(404).json({ error: "Note not found" });
-    }
-
-    // Generate a fresh Drive link if we have a Drive file ID
-    let driveDownloadUrl = null;
-    if (noteData.driveFileId) {
-      try {
-        driveDownloadUrl = await generateDriveLink(noteData.driveFileId);
-      } catch (driveError) {
-        console.error("Failed to generate Drive link:", driveError);
-        // Continue with just the Cloudinary URL if Drive link fails
-      }
-    }
-
-    const response = {
-      cloudinaryDownloadUrl: noteData.pdfUrl,
-    };
-    
-    if (driveDownloadUrl) {
-      response.driveDownloadUrl = driveDownloadUrl;
-    }
-
-    return res.status(200).json(response);
-  } catch (error) {
-    console.error("Download Error:", error);
-    return res.status(500).json({ error: "Failed to generate download links", details: error.message });
-  }
-});
 
 module.exports = router;
