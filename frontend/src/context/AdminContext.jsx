@@ -18,7 +18,7 @@ export const AdminProvider = ({ children }) => {
       const response = await axios.get(`${BASE_URL}/notes`);
       setNotes(response.data.notes);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -33,7 +33,7 @@ export const AdminProvider = ({ children }) => {
       });
       setNotes((prev) => [...prev, response.data.note]);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,7 @@ export const AdminProvider = ({ children }) => {
       });
       fetchNotes();
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -61,7 +61,7 @@ export const AdminProvider = ({ children }) => {
       await axios.delete(`${BASE_URL}/categories/${category}/subjects/${subject}/notes/${noteId}`);
       setNotes((prev) => prev.filter((note) => note.id !== noteId));
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }
@@ -74,7 +74,7 @@ export const AdminProvider = ({ children }) => {
       const response = await axios.get(`${BASE_URL}/transactions`);
       setTransactions(response.data.transactions);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
     } finally {
       setLoading(false);
     }

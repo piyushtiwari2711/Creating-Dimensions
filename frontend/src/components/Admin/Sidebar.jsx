@@ -8,9 +8,10 @@ import {
   IndianRupee,
   LayoutDashboard,
 } from "lucide-react";
-
+import { useAuth } from "../../context/AuthContext";
 
 const Sidebar = ({ isOpen, toggleSidebar, onNavigate, activeView }) => {
+  const {logOut} = useAuth();
   const navItems = [
     { id: 'upload', icon: Upload, label: 'Upload Notes' },
     { id: 'manage', icon: FileText, label: 'Manage Notes' },
@@ -103,6 +104,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onNavigate, activeView }) => {
             className="flex items-center p-3 rounded-lg transition-all duration-200 w-full text-left mt-auto
               group relative hover:bg-red-500/10 text-gray-300 hover:text-red-400"
             title={!isOpen ? "Logout" : ""}
+            onClick={logOut}
           >
             <LogOut size={20} className="flex-shrink-0" />
             <span

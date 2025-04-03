@@ -1,5 +1,5 @@
   import React, { useState,useEffect } from "react";
-  import {useNavigate} from "react-router"
+  import {Navigate} from "react-router"
   import Sidebar from "../components/Sidebar";
   import NotesSection from "../components/NotesSection";
   import PurchasedNotes from "../components/PurchasedNotes";
@@ -8,16 +8,12 @@
   import {useAuth} from "../context/AuthContext"
 
   function Dashboard() {
-    const navigate = useNavigate();
-    const {user,loading} = useAuth();
-  useEffect(() => {
+    const {user} = useAuth();
     if (!user) {
-      navigate("/signin");
-    }
-  }, [user]);
+    return <Navigate to="/signin" />
+  }
     const [isSidebarOpen, setIsSidebarOpen] = useState(true);
     const [activeSection, setActiveSection] = useState("notes");
-
     const toggleSidebar = () => {
       setIsSidebarOpen(!isSidebarOpen);
     };

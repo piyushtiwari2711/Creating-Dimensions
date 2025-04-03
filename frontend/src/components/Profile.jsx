@@ -82,7 +82,7 @@ const Profile = () => {
       toast.success("Profile updated successfully!");
       setIsEditing(false);
     } catch (err) {
-      setError(err.message);
+      setError(err.response?.data?.message || err.message);
       toast.error("Failed to update profile!");
     }
   };
