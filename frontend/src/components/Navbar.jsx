@@ -12,7 +12,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="fixed w-full bg-white shadow-sm z-50">
+    <nav className="fixed w-full bg-[#b1cbdd] shadow-sm z-50">
       <div className="container max-w-[1400px] mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <ScrollLink
@@ -21,7 +21,7 @@ export function Navbar() {
             duration={500}
             className="flex items-center space-x-2 cursor-pointer"
           >
-            <img src="./logo.png" alt="logo"  className="h-6 "/>
+            <img src="./logo.png" alt="logo"  className="h-8 "/>
             {/* <BookOpen className="h-6 w-6 text-blue-600" /> */}
             <span className="text-xl font-bold text-gray-800">
               Creating Dimensions
@@ -32,7 +32,7 @@ export function Navbar() {
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
-              className="text-gray-600 hover:text-blue-600 focus:outline-none"
+              className="text-black hover:text-blue-600 focus:outline-none"
               aria-label="Toggle menu"
             >
               {isOpen ? (
@@ -49,7 +49,7 @@ export function Navbar() {
               to="hero-section"
               smooth={true}
               duration={500}
-              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
+              className="text-black hover:text-blue-600 transition cursor-pointer"
             >
               Home
             </ScrollLink>
@@ -57,7 +57,7 @@ export function Navbar() {
               to="mentor-section"
               smooth={true}
               duration={500}
-              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
+              className="text-black hover:text-blue-600 transition cursor-pointer"
             >
               Mentors
             </ScrollLink>
@@ -65,7 +65,7 @@ export function Navbar() {
               to="contact-section"
               smooth={true}
               duration={500}
-              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
+              className="text-black hover:text-blue-600 transition cursor-pointer"
             >
               Contact
             </ScrollLink>
@@ -98,7 +98,7 @@ export function Navbar() {
               to="hero-section"
               smooth={true}
               duration={500}
-              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
+              className="text-black hover:text-blue-600 transition cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
               Home
@@ -107,7 +107,7 @@ export function Navbar() {
               to="mentor-section"
               smooth={true}
               duration={500}
-              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
+              className="text-black hover:text-blue-600 transition cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
               Mentors
@@ -116,7 +116,7 @@ export function Navbar() {
               to="contact-section"
               smooth={true}
               duration={500}
-              className="text-gray-600 hover:text-blue-600 transition cursor-pointer"
+              className="text-black hover:text-blue-600 transition cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
               Contact

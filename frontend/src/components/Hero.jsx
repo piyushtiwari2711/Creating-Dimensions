@@ -16,9 +16,9 @@ export function Hero() {
                 #1 Learning Platform
               </span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 leading-tight mb-6">
-              Master Your Skills with
-              <span className="text-blue-600"> Premium Study Notes</span>
+            <h1 className="text-2xl md:text-5xl font-bold text-gray-900 leading-tight mb-6">
+              Enhance your skills and achieve excellence
+              <span className="text-blue-600"> with our esteemed institution.</span>
             </h1>
             <p className="text-lg text-gray-600 mb-8 leading-relaxed">
               Join thousands of successful students who have transformed their

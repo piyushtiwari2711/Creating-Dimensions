@@ -34,7 +34,7 @@ export function ContactForm() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/contact",
+        "http://localhost:3000/api/v1/contact",
         formData
       );
 

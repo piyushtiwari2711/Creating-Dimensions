@@ -23,7 +23,7 @@ router.use("/notes", authenticateUser, notesRouter);
 router.use("/payment", authenticateUser, paymentRouter);
 
 // 💌 Send Email Route
-router.post("/send-email", async (req, res) => {
+router.post("/contact", async (req, res) => {
   const { firstName, lastName ,email, message } = req.body;
 
   // ✅ FIXED: Provide a 'from' field in mailOptions
